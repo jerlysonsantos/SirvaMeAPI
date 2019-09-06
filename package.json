@@ -1,0 +1,39 @@
+{
+  "name": "sirvameapi",
+  "version": "1.0.0",
+  "description": "API para aplicaçao mobile de prestaçao de serviços",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Niggarilomon/SirvaMeAPI.git"
+  },
+  "keywords": [
+    "API",
+    "Serviços",
+    "SirvaMe"
+  ],
+  "author": "Jerlyson Feliciano Santos (Niggarilomon)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Niggarilomon/SirvaMeAPI/issues"
+  },
+  "homepage": "https://github.com/Niggarilomon/SirvaMeAPI#readme",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.6.12",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-plugin-import": "^2.18.2"
+  }
+}
