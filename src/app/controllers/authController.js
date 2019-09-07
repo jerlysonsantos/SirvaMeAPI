@@ -3,9 +3,12 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const crypto = require('crypto');
 
 const User = require('../models/userModel.js');
 const { secret } = require('../../config/secretToken.json');
+const mailer = require('../../module/mailer.js');
 
 // =========================Gera Um token de Autenticação==================== //
 function generateToken(params = {}) {
@@ -14,6 +17,8 @@ function generateToken(params = {}) {
   });
 }
 // ========================================================================== //
+
+// ================================= LOGIN E CADASTRO ======================= //
 
 router.post('/login', async (req, res) => {
   try {
@@ -49,10 +54,98 @@ router.post('/register', async (req, res) => {
     const user = await User.create(req.body);
 
     user.password = undefined;
-    return res.send({ user });
+    return res.send({ user, token: generateToken({ id: user.id }) });
   } catch (err) {
     return res.status(400).status({ error: 'Erro em registro de email' });
   }
 });
+
+// ==================================================================== //
+
+// =============================Esquecimento de senha=======================//
+router.post('/forgot_password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).send({ error: 'Usuario inexistente' });
+    }
+
+    const token = crypto.randomBytes(20).toString('hex'); // Cria um Token para o MAIL
+
+    const type = 'Recuperar sua senha';
+    const route = 'resetPass';
+
+    // Determina a validade do MAIL
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+
+    await User.findByIdAndUpdate(user.id, {
+      $set: {
+        passwordResetToken: token,
+        passwordResetExpires: now,
+      },
+    });
+    mailer.sendMail({
+      to: email,
+      from: 'no-reply-sirvame@gmail.com',
+      subject: 'Esquecimento de Senha no Sistema SirvaMe',
+      template: 'mail',
+      attachments: [{
+        filename: '2.png',
+        path: path.join(__dirname, '../../www/img/sirvame.png'),
+        cid: 'logo@cid',
+      }],
+      context: {
+        type,
+        route,
+        token,
+        email,
+      }, // Coloca no email uma varivel
+
+    }, (err) => {
+      if (err) {
+        return res.status(400).send({ err });
+      }
+
+      return res.status(200).send({ success: 'Email enviado com sucesso' });
+    });
+  } catch (err) {
+    return res.status(400).send({ err });
+  }
+});
+// ====================================================================== //
+
+// =============================Reset de Senha=========================== //
+router.post('/reset_password', async (req, res) => {
+  try {
+    const { email, token, password } = req.body;
+    const user = await User.findOne({ email }).select('+passwordResetToken passwordResetExpires');
+
+    if (!user) {
+      return res.status(400).send({ error: 'Usuario inexistente' });
+    }
+    // Verifica a Validade do Token
+    if (token !== user.passwordResetToken) {
+      return res.status(400).send({ error: 'Token Invalido' });
+    }
+
+    // ---------------------Verifica se o Token expirou----------------//
+    const now = new Date();
+    if (now > user.passwordResetExpires) {
+      return res.status(400).send({ error: 'Token Expirou' });
+    }
+    // ----------------------------------------------------------------//
+    user.password = password;
+
+    await user.save();
+
+    return res.status(200).send({ ok: true });
+  } catch (err) {
+    return res.status(400).send({ error: 'Erro no esqueci recuperar senha' });
+  }
+});
+// ==========================================================================//
 
 module.exports = app => app.use('/auth', router);

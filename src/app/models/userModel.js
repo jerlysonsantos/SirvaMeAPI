@@ -21,6 +21,21 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 
+  passwordResetToken: {
+    type: String,
+    select: false,
+  },
+
+  passwordResetExpires: {
+    type: Date,
+    select: false,
+  },
+
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+
   createAt: {
     type: Date,
     default: Date.now,
@@ -29,6 +44,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // ========================= Encryptação de Senha =================== //
+// eslint-disable-next-line func-names
 userSchema.pre('save', function (next) {
   bcrypt.hash(this.password, 10, (err, hash) => {
     if (err) {
