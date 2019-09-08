@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const crypto = require('crypto');
+const passport = require('passport');
 
 const User = require('../models/userModel.js');
 const { secret } = require('../../config/secretToken.json');
@@ -147,5 +148,17 @@ router.post('/reset_password', async (req, res) => {
   }
 });
 // ==========================================================================//
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+  try {
+    return res.send({ user: req.user });
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro na authenticação por social' });
+  }
+});
+// ==========================================================================//
+
 
 module.exports = app => app.use('/auth', router);

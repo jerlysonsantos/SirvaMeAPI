@@ -1,0 +1,7 @@
+{
+  "googleAuth": {
+      "googleCosumerKey": "939106990226-68crorsh918950altn6f2fmmbjeop2c8.apps.googleusercontent.com",
+      "googleCosumerSecret": "-P0Lr6t0GiOYaEfG1Q2t7Th8",
+      "callbackURL": "http://localhost:3000/auth/google/callback"
+  }
+}

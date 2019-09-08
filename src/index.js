@@ -1,7 +1,17 @@
 const express = require('express');
+const passport = require('passport');
+const session = require('express-session');
 const bodyParser = require('body-parser');
 
 const app = express();
+
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(session({
+  resave: false,
+  saveUninitialized: true,
+  secret: '8918c014d3fc7c0ad0721fe825371b76',
+}));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
