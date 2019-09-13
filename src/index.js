@@ -15,9 +15,6 @@ app.use(session({
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.get('/', (req, res) => {
-  return res.end('Servidor Aberto');
-});
 
 function normalizePort(val) {
   const ports = parseInt(val, 10);

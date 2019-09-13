@@ -1,3 +1,7 @@
+/**
+ * Modelo do Serviço
+ */
+
 const mongoose = require('../../database');
 require('mongoose-double')(mongoose);
 

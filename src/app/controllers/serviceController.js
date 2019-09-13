@@ -1,3 +1,7 @@
+/**
+ * Esse controller é um CRUD dos servivos e também há uma rota para commentarios
+ */
+
 const express = require('express');
 
 const router = express.Router();
@@ -5,7 +9,8 @@ const authMiddleware = require('../middlewares/authMiddleware.js');
 
 const Service = require('../models/serviceModel.js');
 
-router.use(authMiddleware);
+router.use(authMiddleware); // Middleware para validar sessão
+// =============================== Criar Um novo serviço ========================= //
 router.post('/createService', async (req, res) => {
   try {
     const service = await Service.create({ ...req.body, user: req.userId });
@@ -19,6 +24,9 @@ router.post('/createService', async (req, res) => {
     return res.status(400).send({ error: 'Erro na criação do serviço' });
   }
 });
+// =============================================================================== //
+
+// ============================== Retorna um serviço individual ================== //
 
 router.get('/getService', async (req, res) => {
   try {
@@ -34,7 +42,9 @@ router.get('/getService', async (req, res) => {
     return res.status(400).send({ error: 'Erro em pegar o serviço' });
   }
 });
+// =============================================================================== //
 
+// ================================= Retorna todos os serviços =================== //
 router.get('/getServices', async (req, res) => {
   try {
     const services = await Service.find({})
@@ -51,9 +61,11 @@ router.get('/getServices', async (req, res) => {
   }
 });
 
-router.delete('/deleteService', async (req, res) => {
+// ========================== Apaga um serviço especifico ======================= //
+router.delete('/deleteService/:id', async (req, res) => {
   try {
-    const service = await Service.deleteOne({ user: req.userId });
+    const { id } = req.params;
+    const service = await Service.deleteOne({ $and: [{ user: req.userId }, { _id: id }] });
 
     if (!service) {
       return res.status(400).send({ error: 'Erro interno em apagar serviço' });
@@ -64,10 +76,13 @@ router.delete('/deleteService', async (req, res) => {
     return res.status(400).send({ error: 'Erro em apagar o serviço' });
   }
 });
+// =============================================================================== //
 
-router.put('/updateService', async (req, res) => {
+// ============================ Atualiza um serviço especifico =================== //
+router.put('/updateService/:id', async (req, res) => {
   try {
-    const service = await Service.findOneAndUpdate({ user: req.userId }, req.body).populate('user');
+    const { id } = req.params;
+    const service = await Service.findOneAndUpdate({ $and: [{ user: req.userId }, { _id: id }] }, req.body).populate('user');
 
     if (!service) {
       return res.status(400).send({ error: 'Erro interno em atualizar o serviço' });
@@ -77,24 +92,6 @@ router.put('/updateService', async (req, res) => {
     return res.status(400).send({ error: 'Erro em atualizar o serviço' });
   }
 });
-
-router.put('/ranked/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const service = await Service.findById(id).populate('user');
-    service.comments.push({ ...req.body, author: req.userId });
-
-    const ranks = service.comments.map(item => item.rank);
-    const totalRank = ranks.reduce((a, b) => a + b, 0);
-
-    service.rank = totalRank / service.comments.length;
-    service.save();
-
-    return res.send({ service });
-  } catch (error) {
-    return res.status(400).send({ error: 'Erro em rankear o serviço' });
-  }
-});
+// =============================================================================== //
 
 module.exports = app => app.use('/service', router);

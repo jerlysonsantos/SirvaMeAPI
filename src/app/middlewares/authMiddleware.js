@@ -1,3 +1,8 @@
+/**
+ * Middleware para validar sessão
+ * obs.: Tudos os controllers tem que passar pela verificação de sessão
+ */
+
 const jwt = require('jsonwebtoken');
 const { secret } = require('../../config/secretToken.json');
 

@@ -1,8 +1,13 @@
+/**
+ * Modelo do usuário
+ */
+
 const bcrypt = require('bcrypt');
 const mongoose = require('../../database');
 
 const userSchema = new mongoose.Schema({
-  name: {
+
+  username: {
     type: String,
     require: true,
     unique: true,
@@ -13,6 +18,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     require: true,
     lowercase: true,
+  },
+
+  name: {
+    type: String,
+    require: true,
   },
 
   password: {

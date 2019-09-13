@@ -1,3 +1,8 @@
+/**
+ * Controller para tratar tudo que envolver a conta do usuário
+ * desde registro à esquecimento de senhas
+ */
+
 const express = require('express');
 
 const router = express.Router();
@@ -25,18 +30,19 @@ router.post('/login', async (req, res) => {
   try {
     const { emailOrUser, password } = req.body;
 
-    const user = await User.findOne({ $or: [{ email: emailOrUser }, { name: emailOrUser }] }).select('+password');
-
+    // Verificar se existe o usuário
+    const user = await User.findOne({ $or: [{ email: emailOrUser }, { username: emailOrUser }] }).select('+password');
     if (!user) {
       return res.status(400).send({ error: 'Usuario inexistente' });
     }
 
+    // Compara senha para efetuar o login
     if (!await bcrypt.compare(password, user.password)) {
       return res.status(401).send({ error: 'Senha invalida' });
     }
 
+    // Retorna as informações do usuario logado mais o token de sessão
     user.password = undefined;
-
     return res.send({ user, token: generateToken({ id: user.id }) });
   } catch (err) {
     return res.status(400).status({ error: 'Erro no login' });
@@ -45,15 +51,61 @@ router.post('/login', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const { name, email } = req.body;
-    const exist = await User.findOne({ $or: [{ email }, { name }] });
+    const { username, email } = req.body;
 
+    // Verifica se já existe o emal ou o nome de usuário
+    const exist = await User.findOne({ $or: [{ email }, { username }] });
     if (exist) {
       return res.status(400).send({ error: 'Usuario já existente' });
     }
 
     const user = await User.create(req.body);
 
+    // ============================= Parte de envio de email ==================== //
+
+    const token = crypto.randomBytes(20).toString('hex'); // Cria um Token para o MAIL
+
+    const type = 'Validar sua conta';
+    const route = 'verify';
+
+    // --------------Determina a validade do MAIL------------//
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+
+    await User.findByIdAndUpdate(user.id, {
+      $set: {
+        passwordResetToken: token,
+        passwordResetExpires: now,
+      },
+    });
+    // -----------------------------------------------------//
+    mailer.sendMail({
+
+      to: email,
+      from: 'no-reply-sirvame@gmail.com',
+      subject: 'Verificação de Email no Sistema SirvaMe',
+      template: 'mail',
+      attachments: [{
+        filename: 'sirvame.png',
+        path: path.join(__dirname, '../../www/img/sirvame.png'),
+        cid: 'logo@cid',
+      }],
+      context: {
+        type,
+        route,
+        token,
+        email,
+      },
+
+    }, (err) => {
+      if (err) {
+        return res.status(400).send({ error: 'Error no envio de email' });
+      }
+      return res.redirect('/');
+    });
+    // ------------------------------------------------------//
+
+    // Retorna informações do usuário registrado para estabelecer sessão
     user.password = undefined;
     return res.send({ user, token: generateToken({ id: user.id }) });
   } catch (err) {
@@ -63,15 +115,18 @@ router.post('/register', async (req, res) => {
 
 // ==================================================================== //
 
-// =============================Esquecimento de senha=======================//
+// ============================ Esquecimento de senha ===================== //
 router.post('/forgot_password', async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
 
+    // Verifica se usuário existe
     if (!user) {
       return res.status(400).send({ error: 'Usuario inexistente' });
     }
+
+    // ============================= Parte de envio de email ==================== //
 
     const token = crypto.randomBytes(20).toString('hex'); // Cria um Token para o MAIL
 
@@ -94,7 +149,7 @@ router.post('/forgot_password', async (req, res) => {
       subject: 'Esquecimento de Senha no Sistema SirvaMe',
       template: 'mail',
       attachments: [{
-        filename: '2.png',
+        filename: 'sirvame.png',
         path: path.join(__dirname, '../../www/img/sirvame.png'),
         cid: 'logo@cid',
       }],
@@ -103,7 +158,7 @@ router.post('/forgot_password', async (req, res) => {
         route,
         token,
         email,
-      }, // Coloca no email uma varivel
+      },
 
     }, (err) => {
       if (err) {
@@ -124,6 +179,7 @@ router.post('/reset_password', async (req, res) => {
     const { email, token, password } = req.body;
     const user = await User.findOne({ email }).select('+passwordResetToken passwordResetExpires');
 
+    // Verficar se usuário existe
     if (!user) {
       return res.status(400).send({ error: 'Usuario inexistente' });
     }
@@ -138,8 +194,9 @@ router.post('/reset_password', async (req, res) => {
       return res.status(400).send({ error: 'Token Expirou' });
     }
     // ----------------------------------------------------------------//
-    user.password = password;
 
+    // Atualiza o password
+    user.password = password;
     await user.save();
 
     return res.status(200).send({ ok: true });
@@ -149,8 +206,8 @@ router.post('/reset_password', async (req, res) => {
 });
 // ==========================================================================//
 
+// ============================ Login Social =============================== //
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
   try {
     return res.send({ user: req.user });
@@ -158,7 +215,7 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
     return res.status(400).send({ error: 'Erro na authenticação por social' });
   }
 });
-// ==========================================================================//
+// ========================================================================= //
 
 
 module.exports = app => app.use('/auth', router);
