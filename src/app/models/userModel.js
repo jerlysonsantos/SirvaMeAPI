@@ -4,7 +4,9 @@
 
 const bcrypt = require('bcrypt');
 const mongoose = require('../../database');
+require('mongoose-double')(mongoose);
 
+const SchemaTypes = mongoose.Schema.Types;
 const userSchema = new mongoose.Schema({
 
   username: {
@@ -31,6 +33,73 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 
+  contractedServices: [{
+    service: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Service',
+    },
+    dates: [{
+      type: Date,
+    }],
+    value: {
+      type: SchemaTypes.Double,
+    },
+    accepted: {
+      type: Boolean,
+      default: false,
+    },
+  }],
+
+  toAcceptServices: [{
+    service: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Service',
+    },
+    client: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    dates: [{
+      type: Date,
+    }],
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+  }],
+
+  acceptedServices: [{
+    service: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Service',
+    },
+    client: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    dates: [{
+      type: Date,
+    }],
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+  }],
+
   passwordResetToken: {
     type: String,
     select: false,
@@ -54,16 +123,23 @@ const userSchema = new mongoose.Schema({
 });
 
 // ========================= Encryptação de Senha =================== //
+
 // eslint-disable-next-line func-names
 userSchema.pre('save', function (next) {
-  bcrypt.hash(this.password, 10, (err, hash) => {
-    if (err) {
-      throw err;
-    }
-    this.password = hash;
+  if (this.password == null || this.password === undefined) {
     next();
-  });
+  } else {
+    bcrypt.hash(this.password, 10, (err, hash) => {
+      if (err) {
+        throw err;
+      }
+      this.password = hash;
+      next();
+    });
+  }
 });
+
+
 // ================================================================== //
 
 const User = mongoose.model('User', userSchema);
