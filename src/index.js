@@ -1,10 +1,14 @@
+require('dotenv').config();
+
 const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
 
+app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(session({

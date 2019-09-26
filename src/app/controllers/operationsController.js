@@ -12,10 +12,10 @@ const authMiddleware = require('../middlewares/authMiddleware.js');
 
 router.use(authMiddleware);
 
-// ===================== Aceitação e Rejeição de Serviço ========================  //
+// ===================== Aceitação e Rejeição de Serviço ======================== //
 router.get('/acceptService/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID da lista de seviços para serem aceitos
     const provider = await User.findById(req.userId);
 
     if (!provider) {
@@ -38,10 +38,9 @@ router.get('/acceptService/:id', async (req, res) => {
     return res.status(400).send({ error: 'Erro em aceitar o serviço' });
   }
 });
-
 router.delete('/rejectService/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID da lista de seviços para serem aceitos
 
     const provider = await User.findById(req.userId);
     const providerLoc = provider.toAcceptServices.map(e => e.id).indexOf(id);
@@ -79,7 +78,7 @@ router.delete('/rejectService/:id', async (req, res) => {
 // ===================== Contrato e Cancelamento de Serviço ===================== //
 router.post('/contractService/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID do serviço requisitado
     const { location, dates } = req.body;
 
     const user = await User.findByIdAndUpdate(req.userId);
@@ -117,7 +116,7 @@ router.post('/contractService/:id', async (req, res) => {
 });
 router.delete('/cancelService/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID do serviço cancelado
 
     const user = await User.findById(req.userId);
 
@@ -151,7 +150,7 @@ router.delete('/cancelService/:id', async (req, res) => {
 });
 // ============================================================================== //
 
-// ===================== Rankear e Comentar um Serviço especifico =============== //
+// ==================== Rankear e Comentar um Serviço especifico ================ //
 router.put('/rankService/:id', async (req, res) => {
   try {
     const { id } = req.params;
