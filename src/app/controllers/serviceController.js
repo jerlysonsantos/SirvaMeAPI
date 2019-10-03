@@ -45,17 +45,27 @@ router.get('/getService', async (req, res) => {
 // =============================================================================== //
 
 // ================================= Retorna todos os serviços =================== //
-router.get('/getServices', async (req, res) => {
+router.get('/getServices/:page', async (req, res) => {
+  /**
+   * Por padrão os serviços de maiores ranks vem primeiro
+   */
+
   try {
-    const services = await Service.find({})
-      .populate('user')
+    const { pages } = req.params;
+
+    // Sistema de páginação de items
+    const services = await Service.find({}, null, {
+      skip: parseInt(pages, 10) === 1 ? 0 : pages * 10,
+      limit: 10,
+      sort: { rank: -1 },
+    }).populate('user')
       .populate('comments.author');
 
     if (!services) {
       return res.status(400).send({ error: 'Não há serviços para mostrar' });
     }
 
-    return res.send({ services });
+    return res.send({ services, pages });
   } catch (error) {
     return res.status(400).send({ error: 'Erro em pegar os Serviços' });
   }
