@@ -41,7 +41,8 @@
     "passport": "^0.4.0",
     "passport-google-oauth": "^2.0.0",
     "password-generator": "^2.2.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "eslint": "^6.1.0",

@@ -8,6 +8,14 @@ const cors = require('cors');
 
 const app = express();
 
+// ================== Configurações do Socket.io ======================= //
+
+const port = process.env.PORT || '3000';
+const server = app.listen(port, () => console.log('Open Server'));
+const io = require('socket.io').listen(server);
+
+// ======================== Configurações Gerais ======================= //
+
 app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -20,23 +28,7 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-function normalizePort(val) {
-  const ports = parseInt(val, 10);
-
-  // eslint-disable-next-line no-restricted-globals
-  if (isNaN(ports)) {
-    return val;
-  }
-  if (ports >= 0) {
-    return ports;
-  }
-  return false;
-}
-
-const port = normalizePort(process.env.PORT || '3000');
+// ==================================================================== //
 
 require('./app/controllers/index.js')(app);
-
-app.listen(port, () => {
-  console.log('Start Server');
-});
+require('./app/middlewares/chatMiddleware')(io);
