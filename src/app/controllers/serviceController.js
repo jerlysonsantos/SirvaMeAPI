@@ -3,9 +3,11 @@
  */
 
 const express = require('express');
+const multiparty = require('multiparty');
 
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware.js');
+const compress = require('../middlewares/compressMiddleware.js');
 
 const Service = require('../models/serviceModel.js');
 
@@ -103,5 +105,35 @@ router.put('/updateService/:id', async (req, res) => {
   }
 });
 // =============================================================================== //
+
+// ====================== Upload Images ======================= //
+router.post('/uploadImage', async (req, res) => {
+  try {
+    const form = new multiparty.Form();
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).send({ error: 'Error em enviar a foto' });
+      }
+      if (!fields || !files) {
+        return res.status(400).send({ error: 'Não há arquivos' });
+      }
+
+      const { images } = files;
+
+
+      const compressedImages = await Promise.all(
+        images.map(item => compress.compressImage(item, 1152, 768)),
+      );
+
+      const service = await Service.findOneAndUpdate({ user: req.userId },
+        { $push: { images: compressedImages.forEach(item => item) } });
+      return res.send({ service });
+    });
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro em enviar as imagens' });
+  }
+});
+// ====================== Upload Images ======================= //
 
 module.exports = app => app.use('/service', router);

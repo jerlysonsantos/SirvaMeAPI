@@ -24,6 +24,10 @@ const serviceSchema = new mongoose.Schema({
     required: false,
   },
 
+  images: [{
+    type: Buffer,
+  }],
+
   contacts: [{
     contactType: {
       type: String,

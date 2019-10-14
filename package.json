@@ -36,12 +36,14 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.6.12",
     "mongoose-double": "0.0.1",
+    "multiparty": "^4.2.1",
     "nodemailer": "^6.3.0",
     "nodemailer-express-handlebars": "^3.1.0",
     "passport": "^0.4.0",
     "passport-google-oauth": "^2.0.0",
     "password-generator": "^2.2.0",
     "path": "^0.12.7",
+    "sharp": "^0.23.1",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {

@@ -9,6 +9,10 @@ require('mongoose-double')(mongoose);
 const SchemaTypes = mongoose.Schema.Types;
 const userSchema = new mongoose.Schema({
 
+  avatar: {
+    type: Buffer,
+  },
+
   username: {
     type: String,
     require: true,
@@ -138,8 +142,6 @@ userSchema.pre('save', function (next) {
     });
   }
 });
-
-
 // ================================================================== //
 
 const User = mongoose.model('User', userSchema);
