@@ -34,7 +34,7 @@
     "express-session": "^1.16.2",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.6.12",
+    "mongoose": "^5.7.5",
     "mongoose-double": "0.0.1",
     "multiparty": "^4.2.1",
     "nodemailer": "^6.3.0",
