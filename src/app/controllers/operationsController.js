@@ -79,7 +79,7 @@ router.delete('/rejectService/:id', async (req, res) => {
 router.post('/contractService/:id', async (req, res) => {
   try {
     const { id } = req.params; // ID do serviço requisitado
-    const { location, dates } = req.body;
+    const { location, date, extraInfo } = req.body;
 
     const user = await User.findByIdAndUpdate(req.userId);
 
@@ -103,7 +103,8 @@ router.post('/contractService/:id', async (req, res) => {
     provider.toAcceptServices.push({
       service: id,
       location,
-      dates,
+      extraInfo,
+      date,
       client: req.userId,
     });
     user.save();

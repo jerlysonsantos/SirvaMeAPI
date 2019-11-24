@@ -24,12 +24,11 @@ router.post('/avatarUpload', async (req, res) => {
 
       const { image } = files;
 
-      const user = await User.findById(req.userId);
-      const data = await compress.compressImage(image[0], 800, 600);
-
-      user.avatar = data;
-      user.save();
-      return res.send({ user });
+      compress.compressImage(image[0], 800, 600)
+        .then(async (data) => {
+          const user = await User.findByIdAndUpdate(req.userId, { avatar: data });
+          return res.send({ user });
+        });
     });
   } catch (error) {
     return res.status(400).send({ error: 'Erro em Adicionar um Avatar' });

@@ -37,6 +37,11 @@ const serviceSchema = new mongoose.Schema({
     },
   }],
 
+  availableDays: [{
+    weekDay: String,
+    schedule: String,
+  }],
+
   prices: [{
     priceFor: {
       type: String,

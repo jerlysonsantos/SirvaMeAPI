@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 const mongoose = require('../../database');
 require('mongoose-double')(mongoose);
 
-const SchemaTypes = mongoose.Schema.Types;
 const userSchema = new mongoose.Schema({
 
   avatar: {
@@ -42,11 +41,11 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Service',
     },
-    dates: [{
+    date: {
       type: Date,
-    }],
-    value: {
-      type: SchemaTypes.Double,
+    },
+    extraInfo: {
+      type: String,
     },
     accepted: {
       type: Boolean,
@@ -63,9 +62,12 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    dates: [{
+    date: {
       type: Date,
-    }],
+    },
+    extraInfo: {
+      type: String,
+    },
     location: {
       type: {
         type: String,
@@ -88,9 +90,12 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    dates: [{
+    date: {
       type: Date,
-    }],
+    },
+    extraInfo: {
+      type: String,
+    },
     location: {
       type: {
         type: String,
