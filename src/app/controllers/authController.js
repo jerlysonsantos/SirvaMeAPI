@@ -31,7 +31,13 @@ router.post('/login', async (req, res) => {
     const { emailOrUser, password } = req.body;
 
     // Verificar se existe o usuário
-    const user = await User.findOne({ $or: [{ email: emailOrUser }, { username: emailOrUser }] }).select('+password');
+    const user = await User.findOne({ $or: [{ email: emailOrUser }, { username: emailOrUser }] })
+      .populate('toAcceptServices.service', 'name type description')
+      .populate('toAcceptServices.client', 'avatar name email')
+      .populate('acceptedServices.service', 'name type description')
+      .populate('acceptedServices.client', 'avatar name email')
+      .populate('contractedServices.service', 'name type description')
+      .select('+password');
     if (!user) {
       return res.status(400).send({ error: 'Usuario inexistente' });
     }
