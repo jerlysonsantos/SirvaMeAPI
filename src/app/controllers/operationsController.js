@@ -177,4 +177,43 @@ router.put('/rankService/:id', async (req, res) => {
 });
 // ============================================================================== //
 
+// ====================== GET Services ======================= //
+
+router.get('/getToAcceptServices', async (req, res) => {
+  try {
+    const services = await User.findById(req.userId)
+      .populate('toAcceptServices.service', 'name type description')
+      .populate('toAcceptServices.client', 'avatar name email');
+
+    return res.send({ services: services.toAcceptServices });
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro em aceitar o serviço' });
+  }
+});
+
+router.get('/getAcceptedServices', async (req, res) => {
+  try {
+    const services = await User.findById(req.userId)
+      .populate('acceptedServices.service', 'name type description')
+      .populate('acceptedServices.client', 'avatar name email');
+
+    return res.send({ services: services.acceptedServices });
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro em aceitar o serviço' });
+  }
+});
+
+router.get('/getContractedServices', async (req, res) => {
+  try {
+    const services = await User.findById(req.userId)
+      .populate('contractedServices.service', 'name type description');
+
+    return res.send({ services: services.contractedServices });
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro em aceitar o serviço' });
+  }
+});
+
+// ====================== GET Services ======================= //
+
 module.exports = app => app.use('/operations', router);
