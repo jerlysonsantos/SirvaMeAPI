@@ -61,7 +61,7 @@ router.post('/register', async (req, res) => {
     }
 
     const user = await User.create(req.body);
-
+    /*
     // ============================= Parte de envio de email ==================== //
 
     const token = crypto.randomBytes(20).toString('hex'); // Cria um Token para o MAIL
@@ -105,7 +105,7 @@ router.post('/register', async (req, res) => {
       return res.redirect('/');
     });
     // ------------------------------------------------------//
-
+    */
     // Retorna informações do usuário registrado para estabelecer sessão
     user.password = undefined;
     return res.send({ user, token: generateToken({ id: user.id }) });
