@@ -22,10 +22,21 @@ router.get('/acceptService/:id', async (req, res) => {
       return res.status(400).send({ error: 'Usuário não existe' });
     }
 
-    const providerLoc = provider.toAcceptServices.map(e => e.id).indexOf(id);
+    const providerLoc = provider.contractArea.toAcceptServices.map(e => e.id).indexOf(id);
 
-    provider.acceptedServices.push(provider.toAcceptServices[providerLoc]);
-    provider.toAcceptServices.splice(providerLoc, 1);
+    await User.findOneAndUpdate(
+      {
+        _id: provider.contractArea.toAcceptServices[providerLoc].client,
+        'contractArea.contractedServices.service': provider.contractArea.toAcceptServices[providerLoc].service,
+      },
+
+      { $set: { 'contractArea.contractedServices.$.accepted': true } },
+    );
+
+    provider
+      .contractArea.acceptedServices.push(provider.contractArea.toAcceptServices[providerLoc]);
+    provider.contractArea.toAcceptServices.splice(providerLoc, 1);
+
     provider.save();
 
     /**
@@ -38,14 +49,15 @@ router.get('/acceptService/:id', async (req, res) => {
     return res.status(400).send({ error: 'Erro em aceitar o serviço' });
   }
 });
-router.delete('/rejectService/:id', async (req, res) => {
+router.delete('/rejectService/:serviceId/:clientId', async (req, res) => {
   try {
-    const { id } = req.params; // ID da lista de seviços para serem aceitos
+    const { serviceId, clientId } = req.params; // ID da lista de seviços para serem aceitos
 
-    const provider = await User.findById(req.userId);
-    const providerLoc = provider.toAcceptServices.map(e => e.id).indexOf(id);
-    const clientId = provider.toAcceptServices[providerLoc].client;
-    const user = await User.findById(clientId);
+    const user = await User.findByIdAndUpdate(clientId,
+      { $pull: { 'contractArea.contractedServices': { service: serviceId } } });
+
+    const provider = await User.findByIdAndUpdate(req.userId,
+      { $pull: { 'contractArea.toAcceptServices': { client: clientId } } });
 
     if (!user) {
       return res.status(400).send({ error: 'Usuário não existe' });
@@ -54,19 +66,6 @@ router.delete('/rejectService/:id', async (req, res) => {
     if (!provider) {
       return res.status(400).send({ error: 'Usuário não existe' });
     }
-
-    /**
-     * Aqui ficará o bloco de codigo para enviar uma noticação para o prestador
-     * como? não sei, mas eu sei que vai ficar aqui
-     */
-    const userLoc = user.contractedServices.map(e => e.service)
-      .indexOf(provider.toAcceptServices[providerLoc].service);
-
-    user.contractedServices.splice(userLoc, 1);
-    provider.toAcceptServices.splice(providerLoc, 1);
-
-    provider.save();
-    user.save();
 
     return res.send({ ok: 'Serviço rejeitado com sucessor' });
   } catch (error) {
@@ -79,7 +78,12 @@ router.delete('/rejectService/:id', async (req, res) => {
 router.post('/contractService/:id', async (req, res) => {
   try {
     const { id } = req.params; // ID do serviço requisitado
-    const { location, date, extraInfo } = req.body;
+    const {
+      address,
+      location,
+      date,
+      extraInfo,
+    } = req.body;
 
     const user = await User.findByIdAndUpdate(req.userId);
 
@@ -99,10 +103,11 @@ router.post('/contractService/:id', async (req, res) => {
      * como? não sei, mas eu sei que vai ficar aqui
      */
 
-    user.contractedServices.push({ ...req.body, service: id });
-    provider.toAcceptServices.push({
+    user.contractArea.contractedServices.push({ ...req.body, service: id });
+    provider.contractArea.toAcceptServices.push({
       service: id,
       location,
+      address,
       extraInfo,
       date,
       client: req.userId,
@@ -115,14 +120,16 @@ router.post('/contractService/:id', async (req, res) => {
     return res.status(400).send({ error: 'Erro em contratar um serviço' });
   }
 });
-router.delete('/cancelService/:id', async (req, res) => {
+router.delete('/cancelService/:serviceId', async (req, res) => {
   try {
-    const { id } = req.params; // ID do serviço cancelado
+    const { serviceId } = req.params; // ID do serviço cancelado
 
-    const user = await User.findById(req.userId);
+    const user = await User.findByIdAndUpdate(req.userId,
+      { $pull: { 'contractArea.contractedServices': { service: serviceId } } });
 
-    const service = await Service.findById(id).populate('user');
-    const provider = await User.findById(service.user.id);
+    const service = await Service.findById(serviceId).populate('user');
+    const provider = await User.findByIdAndUpdate(service.user.id,
+      { $pull: { 'contractArea.toAcceptServices': { client: user.id } } });
 
     if (!user) {
       return res.status(400).send({ error: 'Usuário não existe' });
@@ -132,21 +139,13 @@ router.delete('/cancelService/:id', async (req, res) => {
       return res.status(400).send({ error: 'Serviço não existe' });
     }
 
-    /**
-     * Aqui ficará o bloco de codigo para enviar uma noticação para o prestador
-     * como? não sei, mas eu sei que vai ficar aqui
-     */
-    const userLoc = user.contractedServices.map(e => e.service).indexOf(id);
-    const providerLoc = provider.toAcceptServices.map(e => e.client).indexOf(req.userId);
-    user.contractedServices.splice(userLoc, 1);
-    provider.toAcceptServices.splice(providerLoc, 1);
+    if (!provider) {
+      return res.status(400).send({ error: 'Prestador não existe' });
+    }
 
-    provider.save();
-    user.save();
-
-    return res.send({ ok: 'Serviço cancelado com sucessor' });
+    return res.send({ ok: 'Serviço Cancelado com sucesso' });
   } catch (error) {
-    return res.status(400).send({ error: 'Erro em contratar um serviço' });
+    return res.status(400).send({ error: 'Erro em cancelar um serviço' });
   }
 });
 // ============================================================================== //
@@ -182,10 +181,10 @@ router.put('/rankService/:id', async (req, res) => {
 router.get('/getToAcceptServices', async (req, res) => {
   try {
     const services = await User.findById(req.userId)
-      .populate('toAcceptServices.service', 'name type description')
-      .populate('toAcceptServices.client', 'avatar name email');
+      .populate('contractArea.toAcceptServices.service', 'name type description')
+      .populate('contractArea.toAcceptServices.client', 'avatar name email');
 
-    return res.send({ services: services.toAcceptServices });
+    return res.send({ services: services.contractArea.toAcceptServices });
   } catch (error) {
     return res.status(400).send({ error: 'Erro em aceitar o serviço' });
   }
@@ -194,10 +193,10 @@ router.get('/getToAcceptServices', async (req, res) => {
 router.get('/getAcceptedServices', async (req, res) => {
   try {
     const services = await User.findById(req.userId)
-      .populate('acceptedServices.service', 'name type description')
-      .populate('acceptedServices.client', 'avatar name email');
+      .populate('contractArea.acceptedServices.service', 'name type description')
+      .populate('contractArea.acceptedServices.client', 'avatar name email');
 
-    return res.send({ services: services.acceptedServices });
+    return res.send({ services: services.contractArea.acceptedServices });
   } catch (error) {
     return res.status(400).send({ error: 'Erro em aceitar o serviço' });
   }
@@ -206,9 +205,9 @@ router.get('/getAcceptedServices', async (req, res) => {
 router.get('/getContractedServices', async (req, res) => {
   try {
     const services = await User.findById(req.userId)
-      .populate('contractedServices.service', 'name type description');
+      .populate('contractArea.contractedServices.service', 'name type description');
 
-    return res.send({ services: services.contractedServices });
+    return res.send({ services: services.contractArea.contractedServices });
   } catch (error) {
     return res.status(400).send({ error: 'Erro em aceitar o serviço' });
   }

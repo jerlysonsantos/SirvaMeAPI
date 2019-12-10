@@ -36,78 +36,96 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 
-  contractedServices: [{
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Service',
-    },
-    date: {
-      type: Date,
-    },
-    extraInfo: {
-      type: String,
-    },
-    accepted: {
-      type: Boolean,
-      default: false,
-    },
-  }],
-
-  toAcceptServices: [{
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Service',
-    },
-    client: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    date: {
-      type: Date,
-    },
-    extraInfo: {
-      type: String,
-    },
-    location: {
-      type: {
+  contractArea: {
+    contractedServices: [{
+      service: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Service',
+      },
+      date: {
+        type: Date,
+      },
+      extraInfo: {
         type: String,
-        enum: ['Point'],
-        required: true,
       },
-      coordinates: {
-        type: [Number],
-        required: true,
+      accepted: {
+        type: Boolean,
+        default: false,
       },
-    },
-  }],
+    }],
 
-  acceptedServices: [{
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Service',
-    },
-    client: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    date: {
-      type: Date,
-    },
-    extraInfo: {
-      type: String,
-    },
-    location: {
-      type: {
+    toAcceptServices: [{
+      service: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Service',
+      },
+      client: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      date: {
+        type: Date,
+      },
+      extraInfo: {
         type: String,
-        enum: ['Point'],
-        required: true,
       },
-      coordinates: {
-        type: [Number],
-        required: true,
+      address: {
+        state: String,
+        city: String,
+        district: String,
+        streetName: String,
+        number: Number,
+        zipcode: String,
       },
-    },
-  }],
+      location: {
+        type: {
+          type: String,
+          enum: ['Point'],
+          required: true,
+        },
+        coordinates: {
+          type: [Number],
+          required: true,
+        },
+      },
+    }],
+
+    acceptedServices: [{
+      service: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Service',
+      },
+      client: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      date: {
+        type: Date,
+      },
+      extraInfo: {
+        type: String,
+      },
+      address: {
+        state: String,
+        city: String,
+        district: String,
+        streetName: String,
+        number: Number,
+        zipcode: String,
+      },
+      location: {
+        type: {
+          type: String,
+          enum: ['Point'],
+          required: true,
+        },
+        coordinates: {
+          type: [Number],
+          required: true,
+        },
+      },
+    }],
+  },
 
   passwordResetToken: {
     type: String,
