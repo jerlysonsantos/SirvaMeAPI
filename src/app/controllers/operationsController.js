@@ -56,8 +56,8 @@ router.delete('/rejectService/:serviceId/:clientId', async (req, res) => {
     const user = await User.findByIdAndUpdate(clientId,
       { $pull: { 'contractArea.contractedServices': { service: serviceId } } });
 
-    const provider = await User.findByIdAndUpdate(req.userId,
-      { $pull: { 'contractArea.toAcceptServices': { client: clientId } } });
+    const provider = await User.findByIdAndUpdate(req.userId ,
+      { $pull: { 'contractArea.toAcceptServices': { service: serviceId }} });
 
     if (!user) {
       return res.status(400).send({ error: 'Usuário não existe' });
@@ -69,6 +69,7 @@ router.delete('/rejectService/:serviceId/:clientId', async (req, res) => {
 
     return res.send({ ok: 'Serviço rejeitado com sucessor' });
   } catch (error) {
+    console.log(error)
     return res.status(400).send({ error: 'Erro em rejeitar um serviço' });
   }
 });
