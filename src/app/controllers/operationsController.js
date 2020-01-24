@@ -162,7 +162,7 @@ router.put('/rankService/:id', async (req, res) => {
       return res.status(400).send({ error: 'Serviço não existe' });
     }
 
-    service.comments.push({ ...req.body, author: req.userId });
+    service.comments.push({ ...req.body });
 
     const ranks = service.comments.map(item => item.rank);
     const totalRank = ranks.reduce((a, b) => a + b, 0);
