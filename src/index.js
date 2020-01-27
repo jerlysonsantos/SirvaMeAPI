@@ -18,7 +18,7 @@ const io = require('socket.io').listen(server);
 
 app.use(cors({
   origin: "*",
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   methods: "GET,PUT,POST,DELETE",
 }));
 app.use(passport.initialize());
