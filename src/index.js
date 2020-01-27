@@ -16,7 +16,11 @@ const io = require('socket.io').listen(server);
 
 // ======================== Configurações Gerais ======================= //
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: "GET,PUT,POST,DELETE",
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(session({
