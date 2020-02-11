@@ -43,7 +43,7 @@ router.put('/updateProfile', async (req, res) => {
 
     const { name, email, password } = req.body;
 
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).select('+password');    ;
 
     if (!user) {
       return res.status(400).send({ error: 'Usuário Inexistente' });
