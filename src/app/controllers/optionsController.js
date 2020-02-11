@@ -36,4 +36,33 @@ router.post('/avatarUpload', async (req, res) => {
 });
 // ====================== Avatar Upload ======================= //
 
+// ====================== Profile Edit =========================//
+
+router.put('/updateProfile', async (req, res) => {
+  try {
+
+    const { name, email, password } = req.body;
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(400).send({ error: 'Usuário Inexistente' });
+    }
+
+    user.name = name;
+    user.email = email;
+    user.password = password;
+
+    user.save();
+
+    return res.send({ ok: 'Atualizado com Sucesso' });
+
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro em Atualizar o perfil' });
+  }
+});
+
+// ====================== Profile Edit =========================//
+
+
 module.exports = app => app.use('/options', router);
