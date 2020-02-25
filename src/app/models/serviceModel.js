@@ -24,6 +24,20 @@ const serviceSchema = new mongoose.Schema({
     required: false,
   },
 
+  group: {
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group',
+    },
+    hashGroup: {
+      type: String,
+    },
+    invitedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  },
+
   images: [{
     type: Buffer,
   }],

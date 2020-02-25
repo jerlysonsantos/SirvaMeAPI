@@ -4,10 +4,12 @@
 
 const express = require('express');
 const multiparty = require('multiparty');
+const generatePassword = require('password-generator');
 
 const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware.js');
 const compress = require('../middlewares/compressMiddleware.js');
+const group = require('../middlewares/groupMiddleware.js');
 
 const Service = require('../models/serviceModel.js');
 
@@ -60,8 +62,7 @@ router.get('/getServices/:page', async (req, res) => {
       skip: parseInt(pages, 10) === 1 ? 0 : pages * 10,
       limit: 10,
       sort: { rank: -1 },
-    }).populate('user')
-      .populate('comments.author');
+    }).populate('user');
 
     if (!services) {
       return res.status(400).send({ error: 'Não há serviços para mostrar' });
@@ -135,5 +136,61 @@ router.post('/uploadImage', async (req, res) => {
   }
 });
 // ====================== Upload Images ======================= //
+
+// ====================== Criar Grupo de Indicação ====================== //
+
+router.get('/generateGroup', async (req, res) => {
+  try {
+    var randomLength = Math.floor(Math.random() * (30 - 20)) + 20;
+    const service = await Service.findOne({ user: req.userId });
+    const hashGroup = generatePassword(randomLength, false, /[\w\d\?\-]/);
+
+    if(!service){
+      return res.status(401).send({ error: 'Você não é um prestador' })
+    }
+
+    group.verifyGroupExist(res, hashGroup, req.userId)
+      .then(response => {
+        if(!response)
+          return true;
+        if(response.createdBy == req.userId) {
+          return res.status(400).send({ error: 'Esse prestador já gerou um grupo de indicação' });
+        }
+        if(response.hashGroup === hashGroup) {
+          group.generateGroup(res, generatePassword(randomLength, false, /[\w\d\?\-]/), req.userId);
+        }
+      });
+
+    group.generateGroup(res, hashGroup, req.userId);
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro na criação de serviço' });
+  }
+})
+
+// ====================== Criar Serviço por Indicação ====================== //
+
+// ====================== Criar Serviço por Indicação ====================== //
+
+router.post('/createServiceByInvite', (req, res) => {
+  try {
+    const { hashGroup, invitedBy, ...camps } = req.body;
+    group.verifyGroupExist(res, hashGroup)
+      .then(async (response) => {
+        if(!response)
+          return res.status(400).send({ error: 'Grupo não existe' });
+        const service = await Service.create({ ...camps, user: req.userId, group: { group: response._id, hashGroup, invitedBy }});
+
+        if (!service) {
+          return res.status(400).send({ error: 'Erro interno na criação do serviço' });
+        }
+
+        return res.send({ service });
+      });
+  } catch (error) {
+    return res.status(400).send({ error: 'Erro na criação de serviço' });
+  }
+})
+
+// ====================== Criar Serviço por Indicação ====================== //
 
 module.exports = app => app.use('/service', router);
