@@ -11,13 +11,16 @@ const authMiddleware = require('../middlewares/authMiddleware.js');
 const compress = require('../middlewares/compressMiddleware.js');
 const group = require('../middlewares/groupMiddleware.js');
 
+const User = require('../models/userModel.js');
 const Service = require('../models/serviceModel.js');
+const Group = require('../models/groupModel.js');
 
 router.use(authMiddleware); // Middleware para validar sessão
 // =============================== Criar Um novo serviço ========================= //
 router.post('/createService', async (req, res) => {
   try {
     const service = await Service.create({ ...req.body, user: req.userId });
+    const user = await User.findByIdAndUpdate(req.userId, { provider: true, providerArea: { rank: 0.00 } });
 
     if (!service) {
       return res.status(400).send({ error: 'Erro interno na criação do serviço' });
@@ -142,10 +145,10 @@ router.post('/uploadImage', async (req, res) => {
 router.get('/generateGroup', async (req, res) => {
   try {
     var randomLength = Math.floor(Math.random() * (30 - 20)) + 20;
-    const service = await Service.findOne({ user: req.userId });
+    const user = await User.findById(req.userId);
     const hashGroup = generatePassword(randomLength, false, /[\w\d\?\-]/);
 
-    if(!service){
+    if(!user.provider){
       return res.status(401).send({ error: 'Você não é um prestador' })
     }
 
@@ -178,11 +181,26 @@ router.post('/createServiceByInvite', (req, res) => {
       .then(async (response) => {
         if(!response)
           return res.status(400).send({ error: 'Grupo não existe' });
-        const service = await Service.create({ ...camps, user: req.userId, group: { group: response._id, hashGroup, invitedBy }});
 
-        if (!service) {
+        const service = await Service.create({ ...camps, user: req.userId });
+        if (!service)
           return res.status(400).send({ error: 'Erro interno na criação do serviço' });
-        }
+
+
+        const user = await User.findById(req.userId);
+        if (!user)
+          return res.status(400).send({ error: 'Erro interno na criação do serviço' });
+
+        user.provider = true;
+        user.providerArea = { rank: 0.00, group: { group: response._id, hashGroup, invitedBy } };
+        user.save();
+
+        const group = await Group.findById(response._id);
+        if (!group)
+          return res.status(400).send({ error: 'Erro interno na criação do serviço' });
+
+        group.members.push({ ...{memberId: req.userId, invitedBy} });
+        group.save();
 
         return res.send({ service });
       });

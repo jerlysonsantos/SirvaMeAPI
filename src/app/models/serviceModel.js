@@ -24,25 +24,12 @@ const serviceSchema = new mongoose.Schema({
     required: false,
   },
 
-  group: {
-    group: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Group',
-    },
-    hashGroup: {
-      type: String,
-    },
-    invitedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  },
-
   images: [{
     type: Buffer,
   }],
 
   contacts: [{
+    _id: false,
     contactType: {
       type: String,
     },
@@ -52,11 +39,13 @@ const serviceSchema = new mongoose.Schema({
   }],
 
   availableDays: [{
+    _id: false,
     weekDay: String,
     schedule: String,
   }],
 
   prices: [{
+    _id: false,
     priceFor: {
       type: String,
     },
@@ -71,6 +60,7 @@ const serviceSchema = new mongoose.Schema({
   },
 
   comments: [{
+    _id: false,
     comment: {
       type: String,
       required: true,

@@ -16,9 +16,17 @@ const groupSchema = new mongoose.Schema({
     unique: true,
   },
   members: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+    _id: false,
+    memberId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    invitedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    }
   }]
 });
 

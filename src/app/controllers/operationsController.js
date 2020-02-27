@@ -132,17 +132,13 @@ router.delete('/cancelService/:serviceId', async (req, res) => {
     const provider = await User.findByIdAndUpdate(service.user.id,
       { $pull: { 'contractArea.toAcceptServices': { client: user.id } } });
 
-    if (!user) {
+    if (!user)
       return res.status(400).send({ error: 'Usuário não existe' });
-    }
-
-    if (!service) {
+    if (!service)
       return res.status(400).send({ error: 'Serviço não existe' });
-    }
-
-    if (!provider) {
+    if (!provider)
       return res.status(400).send({ error: 'Prestador não existe' });
-    }
+
 
     return res.send({ ok: 'Serviço Cancelado com sucesso' });
   } catch (error) {
@@ -170,8 +166,15 @@ router.put('/rankService/:id', async (req, res) => {
     service.rank = totalRank / service.comments.length;
     service.save();
 
+    const provider = await Service.find({ user: service.user });
+    const ranksProv = provider.map(item => item.rank);
+    const totalProviderRank = ranksProv.reduce((a, b) => a + b, 0);
+    await User.findByIdAndUpdate(service.user, { providerArea: { rank: totalProviderRank/ provider.length }});
+
     return res.send({ ok: 'Comentario feito com sucesso' });
+
   } catch (error) {
+    console.log(error);
     return res.status(400).send({ error: 'Erro em rankear o serviço' });
   }
 });

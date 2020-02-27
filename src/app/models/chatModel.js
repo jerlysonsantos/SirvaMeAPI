@@ -23,6 +23,7 @@ const chatSchema = new mongoose.Schema({
   },
 
   messages: [{
+    _id: false,
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

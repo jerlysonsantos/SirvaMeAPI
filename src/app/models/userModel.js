@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const mongoose = require('../../database');
 require('mongoose-double')(mongoose);
 
+const SchemaTypes = mongoose.Schema.Types;
+
 const userSchema = new mongoose.Schema({
 
   avatar: {
@@ -30,11 +32,34 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
-
   password: {
     type: String,
     required: true,
     select: false,
+  },
+
+  provider: {
+    type: Boolean,
+    default: false,
+  },
+
+  providerArea: {
+    rank: {
+      type: SchemaTypes.Double,
+    },
+    group: {
+      group: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+      },
+      hashGroup: {
+        type: String,
+      },
+      invitedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    },
   },
 
   contractArea: {
