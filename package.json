@@ -43,7 +43,7 @@
     "passport-google-oauth": "^2.0.0",
     "password-generator": "^2.2.0",
     "path": "^0.12.7",
-    "sharp": "^0.24.0",
+    "sharp": "^0.30.5",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
