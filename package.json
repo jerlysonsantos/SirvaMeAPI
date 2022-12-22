@@ -33,7 +33,7 @@
     "express": "^4.17.1",
     "express-session": "^1.16.2",
     "fs": "0.0.1-security",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^5.6.12",
     "mongoose-double": "0.0.1",
     "multiparty": "^4.2.1",
